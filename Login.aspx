@@ -33,7 +33,7 @@
                     <asp:Label ID="Label3" runat="server" Text="Password"></asp:Label>
                 </td>
                 <td class="style2">
-                    <asp:TextBox ID="tb_password" runat="server" Height="16px" Width="281px"></asp:TextBox>
+                    <asp:TextBox ID="tb_password" runat="server" Height="16px" Width="281px" TextMode="Password"></asp:TextBox>
                 </td>
             </tr>
             <tr>

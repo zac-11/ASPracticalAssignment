@@ -20,9 +20,11 @@ namespace PracticalAssignment
                 }
                 else
                 {
+                    lblWelcomeMessage.Text = "<h1>Welcome, " + Session["LoggedIn"].ToString() + "!</h1>";
                     lblMessage.Text = "You have logged in to SITConnect.";
                     lblMessage.ForeColor = Color.Green;
                     btnLogout.Visible = true;
+                    btnChangePassword.Visible = true;
                 }
             }
             else 
@@ -50,6 +52,11 @@ namespace PracticalAssignment
                 Response.Cookies["AuthToken"].Value = string.Empty;
                 Response.Cookies["AuthToken"].Expires = DateTime.Now.AddMonths(-20);
             }
+        }
+
+        protected void ChangePassword (object sender, EventArgs e)
+        {
+            Response.Redirect("ChangePassword.aspx", false);
         }
     }
 }

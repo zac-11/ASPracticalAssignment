@@ -76,7 +76,7 @@ namespace PracticalAssignment
                 {
                     using (SqlConnection con = new SqlConnection(MYDBConnectionString))
                     {
-                        using (SqlCommand cmd = new SqlCommand("INSERT INTO Account VALUES(@FirstName,@LastName,@CreditCardNumber,@Email,@PasswordHash,@PasswordSalt,@DateTimeRegistered,@DateOfBirth,@Photo,@IV,@Key,@LockoutCount,@DateTimeLockout)"))
+                        using (SqlCommand cmd = new SqlCommand("INSERT INTO Account VALUES(@FirstName,@LastName,@CreditCardNumber,@Email,@PasswordHash,@PasswordSalt,@DateTimeRegistered,@DateOfBirth,@Photo,@IV,@Key,@LockoutCount,@DateTimeLockout,@SecondPasswordHash,@SecondPasswordSalt,@ThirdPasswordHash,@ThirdPasswordSalt,@DateTimePasswordChanged)"))
                         {
                             using (SqlDataAdapter sda = new SqlDataAdapter())
                             {

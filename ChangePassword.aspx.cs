@@ -49,7 +49,7 @@ namespace PracticalAssignment
 
         protected void btn_ChangePassword_Click(object sender, EventArgs e)
         {
-            if (passwordValidated() is true)
+            if (passwordValidated())
             {
                 string email = Session["LoggedIn"].ToString();
                 string SecondPasswordHash = getDBHash("current", email);
@@ -57,7 +57,7 @@ namespace PracticalAssignment
                 string ThirdPasswordHash = getDBHash("second", email);
                 string ThirdPasswordSalt = getDBSalt("second", email);
                 System.Diagnostics.Debug.WriteLine(ThirdPasswordHash);
-                
+                DateTime latestPasswordChange = getDateTimePasswordChanged(email);
 
                 string newPassword = HttpUtility.HtmlEncode(tb_newPassword.Text.ToString().Trim());
 
@@ -82,71 +82,81 @@ namespace PracticalAssignment
                 Key = cipher.Key;
                 IV = cipher.IV;
 
-                try
+                if (DateTime.Now < latestPasswordChange)
                 {
-                    using (SqlConnection con = new SqlConnection(MYDBConnectionString))
+                    lbl_message.Visible = true;
+                    lbl_message.Text = "You must wait " + Convert.ToInt32(latestPasswordChange.Subtract(DateTime.Now).TotalSeconds) + " seconds before changing your password.";
+                    lbl_message.ForeColor = Color.Red;
+                }
+                else if (DateTime.Now > latestPasswordChange)
+                {
+                    try
                     {
-                        using (SqlCommand cmd = new SqlCommand("UPDATE Account SET PasswordHash=@PasswordHash, PasswordSalt=@PasswordSalt, SecondPasswordHash=@SecondPasswordHash, SecondPasswordSalt=@SecondPasswordSalt, ThirdPasswordHash=@ThirdPasswordHash, ThirdPasswordSalt=@ThirdPasswordSalt, DateTimePasswordChanged=@DateTimePasswordChanged WHERE Email=@Email"))
+                        using (SqlConnection con = new SqlConnection(MYDBConnectionString))
                         {
-                            using (SqlDataAdapter sda = new SqlDataAdapter())
+                            using (SqlCommand cmd = new SqlCommand("UPDATE Account SET PasswordHash=@PasswordHash, PasswordSalt=@PasswordSalt, SecondPasswordHash=@SecondPasswordHash, SecondPasswordSalt=@SecondPasswordSalt, ThirdPasswordHash=@ThirdPasswordHash, ThirdPasswordSalt=@ThirdPasswordSalt, DateTimePasswordChanged=@DateTimePasswordChanged WHERE Email=@Email"))
                             {
-                                cmd.CommandType = CommandType.Text;
-                                cmd.Parameters.AddWithValue("@PasswordHash", finalHash);
-                                cmd.Parameters.AddWithValue("@PasswordSalt", salt);
-                                cmd.Parameters.AddWithValue("@SecondPasswordHash", SecondPasswordHash);
-                                cmd.Parameters.AddWithValue("@SecondPasswordSalt", SecondPasswordSalt);
-                                if (ThirdPasswordHash == null)
+                                using (SqlDataAdapter sda = new SqlDataAdapter())
                                 {
-                                    cmd.Parameters.AddWithValue("@ThirdPasswordHash", DBNull.Value);
-                                } else
-                                {
-                                    cmd.Parameters.AddWithValue("@ThirdPasswordHash", ThirdPasswordHash);
+                                    cmd.CommandType = CommandType.Text;
+                                    cmd.Parameters.AddWithValue("@PasswordHash", finalHash);
+                                    cmd.Parameters.AddWithValue("@PasswordSalt", salt);
+                                    cmd.Parameters.AddWithValue("@SecondPasswordHash", SecondPasswordHash);
+                                    cmd.Parameters.AddWithValue("@SecondPasswordSalt", SecondPasswordSalt);
+                                    if (ThirdPasswordHash == null)
+                                    {
+                                        cmd.Parameters.AddWithValue("@ThirdPasswordHash", DBNull.Value);
+                                    }
+                                    else
+                                    {
+                                        cmd.Parameters.AddWithValue("@ThirdPasswordHash", ThirdPasswordHash);
+                                    }
+                                    if (ThirdPasswordSalt == null)
+                                    {
+                                        cmd.Parameters.AddWithValue("@ThirdPasswordSalt", DBNull.Value);
+                                    }
+                                    else
+                                    {
+                                        cmd.Parameters.AddWithValue("@ThirdPasswordSalt", ThirdPasswordSalt);
+                                    }
+
+                                    cmd.Parameters.AddWithValue("@DateTimePasswordChanged", DateTime.Now.AddMinutes(1));
+                                    cmd.Parameters.AddWithValue("@Email", email);
+                                    cmd.Connection = con;
+                                    try
+                                    {
+                                        con.Open();
+                                        cmd.ExecuteNonQuery();
+                                    }
+                                    catch (Exception ex)
+                                    { throw new Exception(ex.ToString()); }
+                                    finally
+                                    { con.Close(); }
                                 }
-                                if (ThirdPasswordSalt == null)
-                                {
-                                    cmd.Parameters.AddWithValue("@ThirdPasswordSalt", DBNull.Value);
-                                }
-                                else
-                                {
-                                    cmd.Parameters.AddWithValue("@ThirdPasswordSalt", ThirdPasswordSalt);
-                                }
-                                
-                                cmd.Parameters.AddWithValue("@DateTimePasswordChanged", DateTime.Now);
-                                cmd.Parameters.AddWithValue("@Email", email);
-                                cmd.Connection = con;
-                                try
-                                {
-                                    con.Open();
-                                    cmd.ExecuteNonQuery();
-                                }
-                                catch (Exception ex)
-                                { throw new Exception(ex.ToString()); }
-                                finally
-                                { con.Close(); }
                             }
                         }
+
+
                     }
-
-
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.ToString());
-                }
-                // After changing password, perform user logout
-                Session.Clear();
-                Session.Abandon();
-                Session.RemoveAll();
-                Response.Redirect("Login.aspx", false);
-                if (Request.Cookies["ASP.NET_SessionId"] != null)
-                {
-                    Response.Cookies["ASP.NET_SessionId"].Value = string.Empty;
-                    Response.Cookies["ASP.NET_SessionId"].Expires = DateTime.Now.AddMonths(-20);
-                }
-                if (Request.Cookies["AuthToken"] != null)
-                {
-                    Response.Cookies["AuthToken"].Value = string.Empty;
-                    Response.Cookies["AuthToken"].Expires = DateTime.Now.AddMonths(-20);
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.ToString());
+                    }
+                    // After changing password, perform user logout
+                    Session.Clear();
+                    Session.Abandon();
+                    Session.RemoveAll();
+                    Response.Redirect("Login.aspx", false);
+                    if (Request.Cookies["ASP.NET_SessionId"] != null)
+                    {
+                        Response.Cookies["ASP.NET_SessionId"].Value = string.Empty;
+                        Response.Cookies["ASP.NET_SessionId"].Expires = DateTime.Now.AddMonths(-20);
+                    }
+                    if (Request.Cookies["AuthToken"] != null)
+                    {
+                        Response.Cookies["AuthToken"].Value = string.Empty;
+                        Response.Cookies["AuthToken"].Expires = DateTime.Now.AddMonths(-20);
+                    }
                 }
             }
         }
@@ -216,6 +226,12 @@ namespace PracticalAssignment
                     lbl_passwordChecker2.ForeColor = Color.Red;
                     isValid = false;
                 }
+            }
+            if (secondPasswordInDatabase(email, newPassword) || thirdPasswordInDatabase(email, newPassword))
+            {
+                lbl_passwordChecker2.Text = "Your new password cannot be the same as any of your recent passwords.";
+                lbl_passwordChecker2.ForeColor = Color.Red;
+                isValid = false;
             }
             return isValid;
         }
@@ -456,6 +472,34 @@ namespace PracticalAssignment
             }
             
             return s;
+        }
+
+        protected DateTime getDateTimePasswordChanged(string email)
+        {
+            DateTime d = new DateTime();
+            SqlConnection con = new SqlConnection(MYDBConnectionString);
+            string sql = "SELECT DateTimePasswordChanged FROM Account WHERE Email=@Email";
+            SqlCommand cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@Email", email);
+            try
+            {
+                con.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["DateTimePasswordChanged"] != null)
+                        {
+                            if (reader["DateTimePasswordChanged"] != DBNull.Value)
+                            { d = Convert.ToDateTime(reader["DateTimePasswordChanged"].ToString()); }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            { throw new Exception(ex.ToString()); }
+            finally { con.Close(); }
+            return d;
         }
     }
 }
