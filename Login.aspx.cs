@@ -19,7 +19,6 @@ namespace PracticalAssignment
     public partial class Login : System.Web.UI.Page
     {
         string MYDBConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString;
-        static string errorMsg = "";
         byte[] IV;
         byte[] Key;
 
@@ -353,11 +352,5 @@ namespace PracticalAssignment
             }
             catch (WebException ex) { throw ex; }
         }
-
-
-        // Advanced Feature stuff
-        // [Register.aspx.cs] Avoid password reuse, check previous 2 password hash values - checkPasswordHistory()
-        // [ChangePassword.aspx.cs] Change password - changePassword()
-        //
     }
 }

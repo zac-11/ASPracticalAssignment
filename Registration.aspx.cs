@@ -94,6 +94,11 @@ namespace PracticalAssignment
                                 cmd.Parameters.AddWithValue("@Key", Convert.ToBase64String(Key));
                                 cmd.Parameters.AddWithValue("@LockoutCount", 0);
                                 cmd.Parameters.AddWithValue("@DateTimeLockout", DateTime.Now);
+                                cmd.Parameters.AddWithValue("@SecondPasswordHash", "");
+                                cmd.Parameters.AddWithValue("@SecondPasswordSalt", "");
+                                cmd.Parameters.AddWithValue("@ThirdPasswordHash", "");
+                                cmd.Parameters.AddWithValue("@ThirdPasswordSalt", "");
+                                cmd.Parameters.AddWithValue("@DateTimePasswordChanged", DateTime.Now);
                                 cmd.Connection = con;
                                 try
                                 {
