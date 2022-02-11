@@ -5,7 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Login</title>
-    <script src="https://www.google.com/recaptcha/api.js?render=6Ldfg2UeAAAAAMT7-8DL7IeZTVx4anHYeWVC0Q8j"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render="></script>
+    <!-- removed secret key -->
+
     <style type="text/css">
         .auto-style1 { width: 100px; }
     </style>
@@ -45,12 +47,14 @@
             </tr>
                 
             </table>
-            <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response"/>            <asp:Label ID="lbl_captchaMsg" runat="server" EnableViewState="false"></asp:Label>
+            <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response"/>
+            <asp:Label ID="lbl_captchaMsg" runat="server" EnableViewState="false"></asp:Label>
         </div>
     </form>
     <script>
         grecaptcha.ready(function () {
-            grecaptcha.execute("6Ldfg2UeAAAAAMT7-8DL7IeZTVx4anHYeWVC0Q8j", { action: "Login" }).then(function (token) {
+            // removed secret key
+            grecaptcha.execute("", { action: "Login" }).then(function (token) {
                 document.getElementById("g-recaptcha-response").value = token;
             });
         });
