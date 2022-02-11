@@ -11,6 +11,7 @@
             var newPassword = document.getElementById('<%=tb_newPassword.ClientID%>').value;
             var cfmNewPassword = document.getElementById('<%=tb_confirmNewPassword.ClientID%>').value;
             document.getElementById("btn_ChangePassword").disabled = true;
+            document.getElementById("lbl_passwordChecker2").innerHTML = "";
 
             if (newPassword.length < 12) {
                 document.getElementById("lbl_passwordChecker").innerHTML = "Password length must be at least 12 characters.";
